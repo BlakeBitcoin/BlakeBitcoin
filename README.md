@@ -31,7 +31,7 @@ What is BlakeBitcoin?
 
 A Clone of Bitcoin same reward structure Starting with 50 coins per block and a total of 21 million coins 
 The Block target time is 1/4 of Bitcoin's to account for extra hashing speed of Blake-256
-The difficulty retarget is same as Bitcoin at 2016 blocks and the reward halving every 210,000 blocks ~ 1 year
+The difficulty retarget is at 8064 blocks and the reward halving every 210,000 blocks ~ 1 year
 The difficulty ajustment is also same as per Bitcoin
   
 
