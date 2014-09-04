@@ -1,6 +1,6 @@
-Forked from Bitcoin reference wallet 0.8.6 and Blake Coin
+Forked from Bitcoin reference wallet 0.8.6, Blakecoin and Photon
 
-BlakeBitcoin is a cryptocurrency designed to use the Blake 256 algorithm cloned from Blake Coin.
+BlakeBitcoin is a cryptocurrency designed to use the Blake 256 algorithm cloned from Blakecoin and Photon.
 
 Blake-256(optimized) is faster than Scrypt, SHA-256D, Keccak, Groestl
 
