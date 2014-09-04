@@ -2,9 +2,9 @@ Forked from Bitcoin reference wallet 0.8.6 and Blake Coin
 
 BlakeBitcoin is a cryptocurrency designed to use the Blake 256 algorithm cloned from Blake Coin.
 
-Blake-256(optimized) faster than scrypt and faster than sha256 in C (asm is still faster for sha256d)
+Blake-256(optimized) is faster than Scrypt, SHA-256D, Keccak, Groestl
 
-The algorithm was written as a candidate for sha3, Based on round one candidate code from the sphlib 2.1 and reduced the compression function to 8.
+The algorithm was written as a candidate for sha3, Based on round one candidate code from the sphlib 2.1 and reduced rounds to 8.
 
 Tweaks Removed some of the double hashing from the wallet as it is wasteful on compute, No changes to the ecdsa public/private function as that has proven to be secure so far on bitcoin.
 
