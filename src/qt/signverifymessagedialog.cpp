@@ -24,10 +24,10 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget *parent) :
 
 #if (QT_VERSION >= 0x040700)
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
-    ui->addressIn_SM->setPlaceholderText(tr("Enter a BlakeBitcoin address (e.g. BghN8btKtp3HrXgZJwyBakUzALLZ34nA4J)"));
+    ui->addressIn_SM->setPlaceholderText(tr("Enter a BlakeBitcoin address (e.g. 2h3pY51mtTLG1Sf3Tvs8u5gQsLeG5g4fa9D)"));
     ui->signatureOut_SM->setPlaceholderText(tr("Click \"Sign Message\" to generate signature"));
 
-    ui->addressIn_VM->setPlaceholderText(tr("Enter a BlakeBitcoin address (e.g. BghN8btKtp3HrXgZJwyBakUzALLZ34nA4J)"));
+    ui->addressIn_VM->setPlaceholderText(tr("Enter a BlakeBitcoin address (e.g. 2h3pY51mtTLG1Sf3Tvs8u5gQsLeG5g4fa9D)"));
     ui->signatureIn_VM->setPlaceholderText(tr("Enter BlakeBitcoin signature"));
 #endif
 

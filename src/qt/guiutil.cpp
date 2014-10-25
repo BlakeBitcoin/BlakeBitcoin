@@ -400,7 +400,7 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         // Write a blakebitcoin.desktop file to the autostart directory:
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
-        optionFile << "Name=Photon\n";
+        optionFile << "Name=BlakeBitcoin\n";
         optionFile << "Exec=" << pszExePath << " -min\n";
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";
