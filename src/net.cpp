@@ -1193,7 +1193,7 @@ void MapPort(bool)
 static const char *strMainNetDNSSeed[][2] = {
     {"blakecoin.org", "blakecoin.org"},
 	{"blakecoin.com", "blakecoin.com"},
-    {NULL, NULL}
+    {178.62.221.227, 178.62.221.227}
 };
 
 static const char *strTestNetDNSSeed[][2] = {
