@@ -7,8 +7,7 @@ Blake-256(optimized) is faster than Scrypt, SHA-256D, Keccak, Groestl
 The algorithm was written as a candidate for sha3, Based on round one candidate code from the sphlib 2.1 and reduced rounds to 8 aka blake256r8.
 
 Current developers:
-BlueDragon747
-Cinnamon Carter
+BlueDragon747 and Cinnamon Carter
 
 What is BlakeBitcoin?
 
