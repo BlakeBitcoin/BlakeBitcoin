@@ -588,10 +588,11 @@ public:
     }
     bool connect(const std::string& server, const std::string& port)
     {
-        // older boost version
-        // ip::tcp::resolver resolver(stream.get_io_service());
-        // newer boost version 
-        boost::asio::ip::tcp::resolver resolver((boost::asio::io_context&)stream.get_executor().context()); 
+#if BOOST_VERSION >= 107000
+        boost::asio::ip::tcp::resolver resolver((boost::asio::io_context&)stream.get_executor().context());
+#else
+        boost::asio::ip::tcp::resolver resolver(stream.get_io_service());
+#endif
         ip::tcp::resolver::query query(server.c_str(), port.c_str());
         ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         ip::tcp::resolver::iterator end;
@@ -678,10 +679,11 @@ static void RPCListen(boost::shared_ptr< basic_socket_acceptor<Protocol, SocketA
                    const bool fUseSSL)
 {
     // Accept connection
-    // older boost uncomment
-    // AcceptedConnectionImpl<Protocol>* conn = new AcceptedConnectionImpl<Protocol>(acceptor->get_io_service(), context, fUseSSL); 
-    // newer boost version uncomment 
+#if BOOST_VERSION >= 107000
     AcceptedConnectionImpl<Protocol>* conn = new AcceptedConnectionImpl<Protocol>((boost::asio::io_context&)acceptor->get_executor().context(), context, fUseSSL);
+#else
+    AcceptedConnectionImpl<Protocol>* conn = new AcceptedConnectionImpl<Protocol>(acceptor->get_io_service(), context, fUseSSL);
+#endif
 
     acceptor->async_accept(
             conn->sslStream.lowest_layer(),
