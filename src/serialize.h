@@ -894,6 +894,10 @@ public:
     void clear()                                     { vch.clear(); nReadPos = 0; }
     iterator insert(iterator it, const char& x=char()) { return vch.insert(it, x); }
     void insert(iterator it, size_type n, const char& x) { vch.insert(it, n, x); }
+    // GCC 7+ / libc++: generic template handles all iterator types
+    // (const_iterator, raw pointers, libc++ __wrap_iter, std::vector<char>::const_iterator)
+    template<typename InputIterator>
+    void insert(iterator it, InputIterator first, InputIterator last) { vch.insert(it, first, last); }
 
 //    void insert(iterator it, const_iterator first, const_iterator last)
 //    {
