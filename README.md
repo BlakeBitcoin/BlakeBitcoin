@@ -18,8 +18,8 @@ BlakeBitcoin was inspired and requested by the Blake community. It is a Blake-25
 | Block time | 2.5 minutes |
 | Block reward | 50 BLC, halving every 210,000 blocks (~1 year) |
 | Difficulty retarget | Every 8,064 blocks (Bitcoin algorithm) |
-| Default port | 356 |
-| RPC port | 243 |
+| Default port | 8356 |
+| RPC port | 8243 |
 | Max supply | 21,000,000 BLC |
 
 ---
@@ -27,7 +27,7 @@ BlakeBitcoin was inspired and requested by the Blake community. It is a Blake-25
 ## Quick Start (Ubuntu 18.04)
 
 ```bash
-git clone https://github.com/SidGrip/BlakeBitcoin.git
+git clone https://github.com/BlakeBitcoin/BlakeBitcoin.git
 cd BlakeBitcoin
 sudo add-apt-repository ppa:bitcoin/bitcoin
 sudo apt update
@@ -70,7 +70,7 @@ Other options:
 ## Platform Build Instructions
 
 ```bash
-git clone https://github.com/SidGrip/BlakeBitcoin.git
+git clone https://github.com/BlakeBitcoin/BlakeBitcoin.git
 cd BlakeBitcoin
 ```
 

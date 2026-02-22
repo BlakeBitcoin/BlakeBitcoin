@@ -25,12 +25,12 @@ COIN_NAME="blakebitcoin"
 COIN_NAME_UPPER="BlakeBitcoin"
 DAEMON_NAME="blakebitcoind"
 QT_NAME="blakebitcoin-qt"
-REPO_URL="https://github.com/SidGrip/BlakeBitcoin.git"
+REPO_URL="https://github.com/BlakeBitcoin/BlakeBitcoin.git"
 REPO_BRANCH="master"
 
 # Network ports and config
-RPC_PORT=243
-P2P_PORT=356
+RPC_PORT=8243
+P2P_PORT=8356
 CHAINZ_CODE="bbtc"
 CONFIG_FILE="${COIN_NAME}.conf"
 CONFIG_DIR=".${COIN_NAME}"
@@ -46,7 +46,7 @@ MXE_SYSROOT="/opt/mxe/usr/x86_64-w64-mingw32.static"
 
 # osxcross paths (macOS cross-compile)
 OSXCROSS_TARGET="/opt/osxcross/target"
-OSXCROSS_HOST="x86_64-apple-darwin25.2"
+OSXCROSS_HOST="x86_64-apple-darwin24.5"
 MACPORTS_PREFIX="/opt/osxcross/target/macports/pkgs/opt/local"
 
 # Colors
