@@ -30,3 +30,10 @@ qrc_*.cpp
 # Mac specific
 .DS_Store
 build
+!src/leveldb*/Makefile
+
+# Build outputs (created by build.sh)
+outputs/
+
+# macOS SDK (Apple license — not redistributable)
+docker/sdk/*.sdk.tar.*
