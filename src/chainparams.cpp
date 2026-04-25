@@ -81,7 +81,7 @@ public:
         consensus.nSubsidyHalvingInterval = 210000;
         // BlakeBitcoin keeps the historical version checks disabled in this bootstrap.
         consensus.BIP34Height = 100000000; // Disabled - far in future
-        consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
+        consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 100000000; // Disabled - far in future
         consensus.BIP66Height = 100000000; // Disabled - far in future
         consensus.powLimit = uint256S("0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -226,13 +226,12 @@ public:
         nDefaultPort = 18112;
         nPruneAfterHeight = 1000;
 
-        // The legacy BlakeBitcoin testnet header tuple copied forward from 0.8.x
-        // does not actually satisfy PoW, which makes a fresh isolated 0.15.2
-        // testnet fail before any AuxPoW QA can start. Keep the historical
-        // timestamp/message/start bytes, but use a valid nonce/hash pair for the
-        // private testnet harness.
-        genesis = CreateGenesisBlock(1392351202, 32975318, 503382015, 112, 50 * COIN);
-        consensus.hashGenesisBlock = uint256S("0x0000007381461a5b95ec93210ec6fcf6d3328e7f34113da11a4657d06caef7ad");
+        // Legacy 0.8 BlakeBitcoin testnet genesis (from main.cpp:2869-2870 + 2820).
+        // Same coinbase tx as mainnet (so merkle root matches), distinct nTime + nNonce.
+        // Genesis PoW check is bypassed in validation.cpp when block hash equals
+        // consensus.hashGenesisBlock, so 0x0000ffff... target is not enforced here.
+        genesis = CreateGenesisBlock(1392351202, 4335147, 503382015, 112, 50 * COIN);
+        consensus.hashGenesisBlock = uint256S("0x00000052d978f26d698e0c4dbce9f8139a69f2fbda37715149146776aeb70d5b");
         assert(genesis.hashMerkleRoot == uint256S("0x0423141660220f9f155a4129a49dcb6431bbed9cd037bba3da34c2baa53ed0ac"));
 
         vFixedSeeds.clear();
