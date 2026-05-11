@@ -981,6 +981,7 @@ resolve_native_linux_packages() {
         libssl-dev
         libevent-dev
         libminiupnpc-dev
+        libzmq5
         libprotobuf-dev
         protobuf-compiler
         libboost-all-dev
