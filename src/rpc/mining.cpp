@@ -816,6 +816,19 @@ static void AuxMiningCheck()
     }
 }
 
+static void ForceAuxpowSegwitSignaling(CBlock& block, const CBlockIndex* pindexPrev)
+{
+    const Consensus::Params& consensusParams = Params().GetConsensus();
+    const ThresholdState state = VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache);
+    if (state == THRESHOLD_STARTED || state == THRESHOLD_LOCKED_IN) {
+        // AuxPoW templates are consumed through createauxblock/getauxblock,
+        // not GBT rules negotiation. Preserve chain-id/AuxPoW bits while
+        // explicitly signaling SegWit during the BIP9 signaling phases.
+        block.nVersion |= VERSIONBITS_TOP_BITS;
+        block.nVersion |= VersionBitsMask(consensusParams, Consensus::DEPLOYMENT_SEGWIT);
+    }
+}
+
 static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const std::shared_ptr<CReserveScript>& reserveScript = nullptr)
 {
     AuxMiningCheck();
@@ -848,7 +861,7 @@ static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const std::sha
                 pblock.reset();
             }
 
-            std::unique_ptr<CBlockTemplate> newBlock = BlockAssembler(Params()).CreateNewBlock(scriptPubKey, false);
+            std::unique_ptr<CBlockTemplate> newBlock = BlockAssembler(Params()).CreateNewBlock(scriptPubKey, true);
             if (!newBlock) {
                 throw JSONRPCError(RPC_OUT_OF_MEMORY, "out of memory");
             }
@@ -858,6 +871,7 @@ static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const std::sha
             nStart = GetTime();
 
             IncrementExtraNonce(&newBlock->block, pindexPrev, nExtraNonce);
+            ForceAuxpowSegwitSignaling(newBlock->block, pindexPrev);
             newBlock->block.SetAuxpowFlag(true);
 
             pblock = std::make_shared<CBlock>(newBlock->block);
@@ -885,6 +899,8 @@ static UniValue AuxMiningCreateBlock(const CScript& scriptPubKey, const std::sha
     UniValue result(UniValue::VOBJ);
     result.push_back(Pair("hash", pblock->GetHash().GetHex()));
     result.push_back(Pair("chainid", pblock->GetChainId()));
+    result.push_back(Pair("version", pblock->nVersion));
+    result.push_back(Pair("versionHex", strprintf("%08x", pblock->nVersion)));
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("coinbasevalue", static_cast<int64_t>(pblock->vtx[0]->vout[0].nValue)));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
@@ -945,6 +961,8 @@ UniValue createauxblock(const JSONRPCRequest& request)
             "{\n"
             "  \"hash\"               (string) hash of the created block\n"
             "  \"chainid\"            (numeric) chain ID for this block\n"
+            "  \"version\"            (numeric) child block version\n"
+            "  \"versionHex\"         (string) child block version in hex\n"
             "  \"previousblockhash\"  (string) hash of the previous block\n"
             "  \"coinbasevalue\"      (numeric) value of the block coinbase\n"
             "  \"bits\"               (string) compressed target of the block\n"
@@ -1008,6 +1026,8 @@ UniValue getauxblock(const JSONRPCRequest& request)
             "{\n"
             "  \"hash\"               (string) hash of the created block\n"
             "  \"chainid\"            (numeric) chain ID for this block\n"
+            "  \"version\"            (numeric) child block version\n"
+            "  \"versionHex\"         (string) child block version in hex\n"
             "  \"previousblockhash\"  (string) hash of the previous block\n"
             "  \"coinbasevalue\"      (numeric) value of the block coinbase\n"
             "  \"bits\"               (string) compressed target of the block\n"
