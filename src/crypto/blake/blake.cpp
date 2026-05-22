@@ -29,7 +29,7 @@
  *
  * @author   Thomas Pornin <thomas.pornin@cryptolog.com>
  *
- * Modified for more speed by BlueDragon747 for the Blakecoin project
+ * Modified for more speed by BlueDragon747 for the BlakeBitcoin project
  */
 
 #include <stddef.h>

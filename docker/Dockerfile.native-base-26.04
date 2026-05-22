@@ -1,0 +1,42 @@
+FROM ubuntu:26.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Build essentials + all dependencies for native daemon + Qt wallet builds
+# Ubuntu 26.04: GCC 15, Boost 1.88, Qt 5.15, OpenSSL 3.0
+# Remove backports from Suites line (GPG key issues in Docker base image)
+RUN sed -i 's/ [a-z]*-backports//' /etc/apt/sources.list.d/*.sources 2>/dev/null || true; \
+    apt-get update && apt-get install -y --no-install-recommends \
+    build-essential g++ make autoconf automake autoconf-archive libtool libtool-bin pkg-config \
+    git wget curl ca-certificates bsdextrautils \
+    libssl-dev \
+    libboost-all-dev \
+    libminiupnpc-dev \
+    libevent-dev \
+    libsqlite3-dev \
+    libzmq3-dev \
+    systemtap-sdt-dev \
+    python3-zmq \
+    python3-bpfcc bpfcc-tools bpftrace \
+    libprotobuf-dev protobuf-compiler \
+    qtbase5-dev qttools5-dev qttools5-dev-tools \
+    libqrencode-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build BerkeleyDB 4.8 from source (Bitcoin PPA unavailable for 24.04)
+RUN wget -q "https://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz" && \
+    tar xzf db-4.8.30.NC.tar.gz && \
+    cd db-4.8.30.NC/build_unix && \
+    sed -i 's/__atomic_compare_exchange/__atomic_compare_exchange_db/' ../dbinc/atomic.h && \
+    CFLAGS="-O2 -std=gnu89" CXXFLAGS="-O2" ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local && \
+    make -j$(nproc) && make install && \
+    cd / && rm -rf db-4.8.30.NC*
+
+# Create build directory
+RUN mkdir -p /build
+
+WORKDIR /build
+
+# Verify toolchain
+RUN g++ --version && \
+    echo "native-base 26.04 ready — GCC 15, Boost 1.88, Qt 5.15, BDB 4.8"

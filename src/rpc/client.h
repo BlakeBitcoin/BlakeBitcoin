@@ -1,10 +1,13 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2018 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPCCLIENT_H
-#define BITCOIN_RPCCLIENT_H
+#ifndef BITCOIN_RPC_CLIENT_H
+#define BITCOIN_RPC_CLIENT_H
+
+#include <string>
+#include <string_view>
 
 #include <univalue.h>
 
@@ -17,6 +20,6 @@ UniValue RPCConvertNamedValues(const std::string& strMethod, const std::vector<s
 /** Non-RFC4627 JSON parser, accepts internal values (such as numbers, true, false, null)
  * as well as objects and arrays.
  */
-UniValue ParseNonRFCJSONValue(const std::string& strVal);
+UniValue ParseNonRFCJSONValue(std::string_view raw);
 
-#endif // BITCOIN_RPCCLIENT_H
+#endif // BITCOIN_RPC_CLIENT_H
