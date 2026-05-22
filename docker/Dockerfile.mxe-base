@@ -1,10 +1,11 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG BUILD_JOBS=8
 
 # Install MXE build dependencies
-RUN apt-get update && apt-get install -y \
-    autoconf automake autopoint bash bison bzip2 curl flex g++ g++-multilib \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf automake autopoint bash bison bzip2 curl ca-certificates flex g++ g++-multilib \
     gettext git gperf intltool libc6-dev-i386 libgdk-pixbuf2.0-dev \
     libltdl-dev libgl-dev libpcre3-dev libssl-dev libtool-bin \
     libxml-parser-perl lzip make openssl p7zip-full patch perl \
@@ -20,8 +21,8 @@ WORKDIR /opt/mxe
 # Build MXE with required packages for cryptocurrency wallets
 # This is the slow step (2-4 hours) — Docker caches it
 RUN make MXE_TARGETS=x86_64-w64-mingw32.static \
-    cc qt5 boost openssl db miniupnpc libqrencode protobuf libevent \
-    -j$(nproc) JOBS=$(nproc)
+    cc qt5 boost openssl db miniupnpc libqrencode protobuf libevent libzmq \
+    -j${BUILD_JOBS} JOBS=${BUILD_JOBS}
 
 # Add MXE to PATH
 ENV PATH="/opt/mxe/usr/bin:${PATH}"
@@ -53,7 +54,7 @@ RUN cd /tmp && \
         --cross-compile-prefix=x86_64-w64-mingw32.static- \
         --prefix=/opt/compat \
         no-shared no-tests && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install_sw && \
     cd / && rm -rf /tmp/openssl*
 
@@ -74,7 +75,7 @@ RUN cd /tmp && \
         CXX=x86_64-w64-mingw32.static-g++ \
         AR=x86_64-w64-mingw32.static-ar \
         RANLIB=x86_64-w64-mingw32.static-ranlib && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install && \
     cd / && rm -rf /tmp/db-4.8*
 
@@ -100,7 +101,7 @@ RUN cd /tmp && \
         --with-thread \
         --with-program_options \
         --with-chrono \
-        -j$(nproc) \
+        -j${BUILD_JOBS} \
         install && \
     cd / && rm -rf /tmp/boost*
 

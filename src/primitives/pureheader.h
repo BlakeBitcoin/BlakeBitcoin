@@ -1,54 +1,45 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2013-2026 The Blakecoin Developers
+// Copyright (c) 2009-present The Bitcoin Core developers
+// Copyright (c) 2013-2026 The BlakeBitcoin Developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_PRIMITIVES_PUREHEADER_H
 #define BITCOIN_PRIMITIVES_PUREHEADER_H
 
-#include "serialize.h"
-#include "uint256.h"
+#include <serialize.h>
+#include <uint256.h>
+#include <util/time.h>
+
+#include <cstdint>
 
 /**
- * A block header without auxpow information.
+ * A block header without AuxPoW payload.
  *
- * This breaks the dependency cycle between the child block header and the
- * auxpow payload, which itself carries a parent block header.
+ * AuxPoW stores a parent block header inside the AuxPoW payload. Splitting the
+ * six-field mined header avoids a type cycle and keeps the block hash anchored
+ * to the pure 80-byte header.
  */
 class CPureBlockHeader
 {
 public:
-    static const int BLOCK_VERSION_DEFAULT = (1 << 4);
-    static const int VERSION_AUXPOW = (1 << 8);
-    static const int VERSION_CHAIN_START = (1 << 16);
-    // AuxPoW only needs a small chain-id field. Keep it bounded so the
-    // versionbits top pattern can coexist with AuxPoW chain IDs.
-    static const int VERSION_CHAIN_MASK = (0xFF << 16);
+    static constexpr int32_t BLOCK_VERSION_DEFAULT = (1 << 4);
+    static constexpr int32_t VERSION_AUXPOW = (1 << 8);
+    static constexpr int32_t VERSION_CHAIN_START = (1 << 16);
+    static constexpr int32_t VERSION_CHAIN_MASK = (0xFF << 16);
 
-    int nVersion;
+    int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
-    unsigned int nTime;
-    unsigned int nBits;
-    unsigned int nNonce;
+    uint32_t nTime;
+    uint32_t nBits;
+    uint32_t nNonce;
 
-    CPureBlockHeader()
+    CPureBlockHeader() { SetNull(); }
+
+    SERIALIZE_METHODS(CPureBlockHeader, obj)
     {
-        SetNull();
-    }
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action)
-    {
-        READWRITE(this->nVersion);
-        READWRITE(hashPrevBlock);
-        READWRITE(hashMerkleRoot);
-        READWRITE(nTime);
-        READWRITE(nBits);
-        READWRITE(nNonce);
+        READWRITE(obj.nVersion, obj.hashPrevBlock, obj.hashMerkleRoot, obj.nTime, obj.nBits, obj.nNonce);
     }
 
     void SetNull()
@@ -61,48 +52,40 @@ public:
         nNonce = 0;
     }
 
-    bool IsNull() const
-    {
-        return (nBits == 0);
-    }
+    bool IsNull() const { return nBits == 0; }
 
     uint256 GetHash() const;
     uint256 GetPoWHash() const;
 
-    int64_t GetBlockTime() const
-    {
-        return (int64_t)nTime;
-    }
+    NodeSeconds Time() const { return NodeSeconds{std::chrono::seconds{nTime}}; }
+    int64_t GetBlockTime() const { return static_cast<int64_t>(nTime); }
 
-    inline int GetBaseVersion() const
-    {
-        return GetBaseVersion(nVersion);
-    }
+    int32_t GetBaseVersion() const { return GetBaseVersion(nVersion); }
 
-    static inline int GetBaseVersion(int version)
+    static int32_t GetBaseVersion(int32_t version)
     {
         return version & ~VERSION_AUXPOW & ~VERSION_CHAIN_MASK;
     }
 
-    void SetBaseVersion(int baseVersion, int chainId)
+    void SetBaseVersion(int32_t base_version, int32_t chain_id)
     {
-        const int modifiers = nVersion & VERSION_AUXPOW;
-        nVersion = (baseVersion & ~VERSION_AUXPOW & ~VERSION_CHAIN_MASK) |
+        const int32_t modifiers = nVersion & VERSION_AUXPOW;
+        nVersion = (base_version & ~VERSION_AUXPOW & ~VERSION_CHAIN_MASK) |
                    modifiers |
-                   ((chainId & 0xFF) * VERSION_CHAIN_START);
+                   ((chain_id & 0xFF) * VERSION_CHAIN_START);
     }
 
-    inline int GetChainId() const
+    int32_t GetChainId() const { return (nVersion & VERSION_CHAIN_MASK) / VERSION_CHAIN_START; }
+
+    void SetChainId(int32_t chain_id)
     {
-        return (nVersion & VERSION_CHAIN_MASK) / VERSION_CHAIN_START;
+        nVersion &= ~VERSION_CHAIN_MASK;
+        nVersion |= (chain_id & 0xFF) * VERSION_CHAIN_START;
     }
 
-    inline bool IsAuxpow() const
-    {
-        return nVersion & VERSION_AUXPOW;
-    }
+    bool IsAuxpow() const { return nVersion & VERSION_AUXPOW; }
 
-    inline void SetAuxpowFlag(bool auxpow)
+    void SetAuxpowFlag(bool auxpow)
     {
         if (auxpow) {
             nVersion |= VERSION_AUXPOW;

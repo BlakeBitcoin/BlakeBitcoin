@@ -13,13 +13,15 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV MACOSX_DEPLOYMENT_TARGET=11.0
 ENV OSXCROSS_SDK=MacOSX26.2.sdk
+ARG BUILD_JOBS=8
 
 # Install build dependencies + clang-18 (needed for _Float16 support in macOS 26.2 SDK)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
     curl \
+    ca-certificates \
     wget \
     python3 \
     libssl-dev \
@@ -45,7 +47,7 @@ RUN apt-get update && apt-get install -y \
 RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main" \
         > /etc/apt/sources.list.d/llvm-18.list && \
-    apt-get update && apt-get install -y \
+    apt-get update && apt-get install -y --no-install-recommends \
     clang-18 llvm-18-dev libclang-18-dev \
     && rm -rf /var/lib/apt/lists/* && \
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100 && \
@@ -85,7 +87,7 @@ RUN cd /tmp && \
         --prefix="$PREFIX" \
         no-shared \
         no-tests && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install_sw && \
     cd / && rm -rf /tmp/openssl*
 
@@ -108,7 +110,7 @@ RUN cd /tmp && \
         --disable-replication \
         --disable-atomicsupport \
         --with-mutex=POSIX/pthreads && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install && \
     cd / && rm -rf /tmp/db-4.8*
 
@@ -132,7 +134,7 @@ RUN cd /tmp && \
         --with-program_options \
         --with-chrono \
         --with-test \
-        -j$(nproc) \
+        -j${BUILD_JOBS} \
         install && \
     cd / && rm -rf /tmp/boost*
 
@@ -153,7 +155,7 @@ RUN cd /tmp && \
         -DUPNPC_BUILD_SHARED=OFF \
         -DUPNPC_BUILD_TESTS=OFF \
         -DUPNPC_BUILD_SAMPLE=OFF && \
-    cmake --build build -j$(nproc) && \
+    cmake --build build -j${BUILD_JOBS} && \
     cmake --install build && \
     cd / && rm -rf /tmp/miniupnpc*
 
@@ -168,7 +170,7 @@ RUN cd /tmp && \
         --enable-static \
         --disable-shared \
         --without-tools && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install && \
     cd / && rm -rf /tmp/qrencode*
 
@@ -250,6 +252,16 @@ RUN cd /tmp && \
         -skip qtserialport \
         -skip qtwayland \
         -skip qtx11extras \
+        -skip qtdeclarative \
+        -skip qtquickcontrols \
+        -skip qtquickcontrols2 \
+        -skip qtscript \
+        -skip qtxmlpatterns \
+        -skip qtcharts \
+        -skip qtdatavis3d \
+        -skip qtgraphicaleffects \
+        -skip qtscxml \
+        -skip qtremoteobjects \
         -nomake examples \
         -nomake tests \
         -qt-zlib \
@@ -261,7 +273,7 @@ RUN cd /tmp && \
         -I "$PREFIX/include" \
         -L "$PREFIX/lib" \
         -no-pkg-config && \
-    make -j$(nproc) && \
+    make -j${BUILD_JOBS} && \
     make install && \
     cd / && rm -rf /tmp/qt-everywhere*
 
