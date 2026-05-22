@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/qt/res/icons/blakebitcoin_32.ico" alt="BlakeBitcoin" width="95">
+  <img src="src/qt/res/icons/blakebitcoin.png" alt="BlakeBitcoin" width="95">
 </p>
 
 # BlakeBitcoin Core 0.25.2
