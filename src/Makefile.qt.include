@@ -95,26 +95,26 @@ BITCOIN_MM = \
   qt/macos_appnap.mm
 
 QT_MOC = \
-  qt/blakebitcoinamountfield.moc \
+  qt/bitcoinamountfield.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
 
 QT_QRC_CPP = qt/qrc_bitcoin.cpp
-QT_QRC = qt/blakebitcoin.qrc
+QT_QRC = qt/bitcoin.qrc
 QT_QRC_LOCALE_CPP = qt/qrc_bitcoin_locale.cpp
-QT_QRC_LOCALE = qt/blakebitcoin_locale.qrc
+QT_QRC_LOCALE = qt/bitcoin_locale.qrc
 
 BITCOIN_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
   qt/bantablemodel.h \
-  qt/blakebitcoin.h \
-  qt/blakebitcoinaddressvalidator.h \
-  qt/blakebitcoinamountfield.h \
-  qt/blakebitcoingui.h \
-  qt/blakebitcoinunits.h \
+  qt/bitcoin.h \
+  qt/bitcoinaddressvalidator.h \
+  qt/bitcoinamountfield.h \
+  qt/bitcoingui.h \
+  qt/bitcoinunits.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
@@ -221,11 +221,11 @@ QT_RES_ICONS = \
 
 BITCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \
-  qt/blakebitcoin.cpp \
-  qt/blakebitcoinaddressvalidator.cpp \
-  qt/blakebitcoinamountfield.cpp \
-  qt/blakebitcoingui.cpp \
-  qt/blakebitcoinunits.cpp \
+  qt/bitcoin.cpp \
+  qt/bitcoinaddressvalidator.cpp \
+  qt/bitcoinamountfield.cpp \
+  qt/bitcoingui.cpp \
+  qt/bitcoinunits.cpp \
   qt/clientmodel.cpp \
   qt/csvmodelwriter.cpp \
   qt/guiutil.cpp \
@@ -290,7 +290,7 @@ endif # ENABLE_WALLET
 
 QT_RES_ANIMATION = $(wildcard $(srcdir)/qt/res/animation/spinner-*.png)
 
-BITCOIN_QT_RC = qt/res/blakebitcoin-qt-res.rc
+BITCOIN_QT_RC = qt/res/bitcoin-qt-res.rc
 
 BITCOIN_QT_INCLUDES = -DQT_NO_KEYWORDS -DQT_USE_QSTRINGBUILDER
 
@@ -339,14 +339,14 @@ bitcoin_qt_libtoolflags = $(AM_LIBTOOLFLAGS) --tag CXX
 
 qt_blakebitcoin_qt_CPPFLAGS = $(bitcoin_qt_cppflags)
 qt_blakebitcoin_qt_CXXFLAGS = $(bitcoin_qt_cxxflags)
-qt_blakebitcoin_qt_SOURCES = $(bitcoin_qt_sources) init/blakebitcoin-qt.cpp
+qt_blakebitcoin_qt_SOURCES = $(bitcoin_qt_sources) init/bitcoin-qt.cpp
 qt_blakebitcoin_qt_LDADD = $(bitcoin_qt_ldadd)
 qt_blakebitcoin_qt_LDFLAGS = $(bitcoin_qt_ldflags)
 qt_blakebitcoin_qt_LIBTOOLFLAGS = $(bitcoin_qt_libtoolflags)
 
 blakebitcoin_gui_CPPFLAGS = $(bitcoin_qt_cppflags)
 blakebitcoin_gui_CXXFLAGS = $(bitcoin_qt_cxxflags)
-blakebitcoin_gui_SOURCES = $(bitcoin_qt_sources) init/blakebitcoin-gui.cpp
+blakebitcoin_gui_SOURCES = $(bitcoin_qt_sources) init/bitcoin-gui.cpp
 blakebitcoin_gui_LDADD = $(bitcoin_qt_ldadd) $(LIBBITCOIN_IPC) $(LIBBITCOIN_UTIL) $(LIBMULTIPROCESS_LIBS)
 blakebitcoin_gui_LDFLAGS = $(bitcoin_qt_ldflags)
 blakebitcoin_gui_LIBTOOLFLAGS = $(bitcoin_qt_libtoolflags)
@@ -356,13 +356,13 @@ QT_QM=$(QT_TS:.ts=.qm)
 
 SECONDARY: $(QT_QM)
 
-$(srcdir)/qt/blakebitcoinstrings.cpp: FORCE
+$(srcdir)/qt/bitcoinstrings.cpp: FORCE
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
 	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) COPYRIGHT_HOLDERS="$(COPYRIGHT_HOLDERS)" $(PYTHON) ../share/qt/extract_strings_qt.py $(libbitcoin_node_a_SOURCES) $(libbitcoin_wallet_a_SOURCES) $(libbitcoin_common_a_SOURCES) $(libbitcoin_zmq_a_SOURCES) $(libbitcoin_consensus_a_SOURCES) $(libbitcoin_util_a_SOURCES)
 
 # The resulted bitcoin_en.xlf source file should follow Transifex requirements.
 # See: https://docs.transifex.com/formats/xliff#how-to-distinguish-between-a-source-file-and-a-translation-file
-translate: $(srcdir)/qt/blakebitcoinstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(BITCOIN_QT_BASE_CPP) qt/blakebitcoin.cpp $(BITCOIN_QT_WINDOWS_CPP) $(BITCOIN_QT_WALLET_CPP) $(BITCOIN_QT_H) $(BITCOIN_MM)
+translate: $(srcdir)/qt/bitcoinstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(BITCOIN_QT_BASE_CPP) qt/bitcoin.cpp $(BITCOIN_QT_WINDOWS_CPP) $(BITCOIN_QT_WALLET_CPP) $(BITCOIN_QT_H) $(BITCOIN_MM)
 	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
 	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) -no-obsolete -I $(srcdir) -locations relative $^ -ts $(srcdir)/qt/locale/blakebitcoin_en.ts
 	@test -n $(LCONVERT) || echo "lconvert is required for updating translations"

@@ -233,6 +233,10 @@ public:
             // TODO to be specified in a future patch (post-mainnet-release).
         };
 
+        // ChainTxData is used by GuessVerificationProgress for operator-facing
+        // sync/readiness estimates. It is not consensus data. dTxRate must stay
+        // in transactions per second; a per-day value here makes a healthy node
+        // report low verification progress even when blocks and headers match.
         chainTxData = ChainTxData{
             .nTime    = 1775981524,
             .nTxCount = 2949114,
@@ -340,10 +344,12 @@ public:
             // TODO to be specified in a future patch.
         };
 
+        // This estimate feeds verificationprogress only. Keep dTxRate in
+        // transactions per second; 60000.0 means 60000 tx/sec, not 60000 tx/day.
         chainTxData = ChainTxData{
             .nTime    = 1392351202,
             .nTxCount = 0,
-            .dTxRate  = 60000.0,
+            .dTxRate  = 60000.0 / (24 * 60 * 60),
         };
     }
 };
