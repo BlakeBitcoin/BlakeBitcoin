@@ -31,10 +31,12 @@ SplashScreen::SplashScreen(const NetworkStyle* networkStyle)
     : QWidget()
 {
     // set reference point, paddings
-    int paddingRight            = 50;
+    int paddingRight            = 34;
     int paddingTop              = 50;
     int titleVersionVSpace      = 17;
     int titleCopyrightVSpace    = 40;
+    const int textLeft          = 250;
+    const int textMaxWidth      = 480 - textLeft - paddingRight;
 
     float fontFactor            = 1.0;
     float devicePixelRatio      = 1.0;
@@ -65,8 +67,10 @@ SplashScreen::SplashScreen(const NetworkStyle* networkStyle)
     QRect rGradient(QPoint(0,0), splashSize);
     pixPaint.fillRect(rGradient, gradient);
 
-    // draw the BlakeBitcoin icon, expected size of PNG: 1024x1024
-    QRect rectIcon(QPoint(-150,-122), QSize(430,430));
+    // draw the BlakeBitcoin icon, expected size of PNG: 1024x1024.
+    // Keep the upstream cropped-coin feel, but leave a hard gap before the
+    // text column so dense coin art cannot reduce title/copyright legibility.
+    QRect rectIcon(QPoint(-148,-112), QSize(386,386));
 
     const QSize requiredSize(1024,1024);
     QPixmap icon(networkStyle->getAppIcon().pixmap(requiredSize));
@@ -77,30 +81,28 @@ SplashScreen::SplashScreen(const NetworkStyle* networkStyle)
     pixPaint.setFont(QFont(font, 33*fontFactor));
     QFontMetrics fm = pixPaint.fontMetrics();
     int titleTextWidth = GUIUtil::TextWidth(fm, titleText);
-    if (titleTextWidth > 176) {
-        fontFactor = fontFactor * 176 / titleTextWidth;
+    if (titleTextWidth > textMaxWidth) {
+        fontFactor = fontFactor * textMaxWidth / titleTextWidth;
     }
 
     pixPaint.setFont(QFont(font, 33*fontFactor));
-    fm = pixPaint.fontMetrics();
-    titleTextWidth  = GUIUtil::TextWidth(fm, titleText);
-    pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight,paddingTop,titleText);
+    pixPaint.drawText(textLeft,paddingTop,titleText);
 
     pixPaint.setFont(QFont(font, 15*fontFactor));
 
     // if the version string is too long, reduce size
     fm = pixPaint.fontMetrics();
     int versionTextWidth  = GUIUtil::TextWidth(fm, versionText);
-    if(versionTextWidth > titleTextWidth+paddingRight-10) {
+    if(versionTextWidth > textMaxWidth) {
         pixPaint.setFont(QFont(font, 10*fontFactor));
         titleVersionVSpace -= 5;
     }
-    pixPaint.drawText(pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight+2,paddingTop+titleVersionVSpace,versionText);
+    pixPaint.drawText(textLeft+2,paddingTop+titleVersionVSpace,versionText);
 
     // draw copyright stuff
     {
         pixPaint.setFont(QFont(font, 10*fontFactor));
-        const int x = pixmap.width()/devicePixelRatio-titleTextWidth-paddingRight;
+        const int x = textLeft;
         const int y = paddingTop+titleCopyrightVSpace;
         QRect copyrightRect(x, y, pixmap.width() - x - paddingRight, pixmap.height() - y);
         pixPaint.drawText(copyrightRect, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, copyrightText);
