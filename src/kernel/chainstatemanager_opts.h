@@ -39,6 +39,8 @@ struct ChainstateManagerOpts {
     std::optional<uint256> assumed_valid_block{};
     //! If the tip is older than this, the node is considered to be in initial block download.
     std::chrono::seconds max_tip_age{DEFAULT_MAX_TIP_AGE};
+    //! Called after an assumeutxo snapshot has been fully validated by the background chainstate.
+    std::function<void()> snapshot_validation_complete_callback{};
     DBOptions block_tree_db{};
     DBOptions coins_db{};
     CoinsViewOptions coins_view{};

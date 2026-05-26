@@ -5,7 +5,7 @@ Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
 Source: https://github.com/BlakeBitcoin/BlakeBitcoin
 
 Files: *
-Copyright: 2009-2023, BlakeBitcoin Core Developers
+Copyright: 2014-2023, BlakeBitcoin Core Developers
 License: Expat
 Comment: The BlakeBitcoin Core Developers encompasses all contributors to the
          project, listed in the release notes or the git log.

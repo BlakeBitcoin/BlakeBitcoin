@@ -19,9 +19,9 @@ constexpr size_t HEADER_COMMITMENT_PERIOD{584};
 //! received and validated against commitments.
 constexpr size_t REDOWNLOAD_BUFFER_SIZE{13959}; // 13959/584 = ~23.9 commitments
 
-// Our memory analysis assumes 48 bytes for a CompressedHeader (so we should
-// re-calculate parameters if we compress further)
-static_assert(sizeof(CompressedHeader) == 48);
+// AuxPoW forks must keep the shared AuxPoW payload while redownloading headers
+// after presync. Dropping it would make contextual header validation reject
+// otherwise valid AuxPoW headers.
 
 HeadersSyncState::HeadersSyncState(NodeId id, const Consensus::Params& consensus_params,
         const CBlockIndex* chain_start, const arith_uint256& minimum_required_work) :

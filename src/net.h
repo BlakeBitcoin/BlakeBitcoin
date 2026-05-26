@@ -736,7 +736,10 @@ public:
     {
         AssertLockNotHeld(m_total_bytes_sent_mutex);
 
-        nLocalServices = connOptions.nLocalServices;
+        {
+            LOCK(m_local_services_mutex);
+            nLocalServices = connOptions.nLocalServices;
+        }
         nMaxConnections = connOptions.nMaxConnections;
         m_max_outbound_full_relay = std::min(connOptions.m_max_outbound_full_relay, connOptions.nMaxConnections);
         m_max_outbound_block_relay = connOptions.m_max_outbound_block_relay;
@@ -873,6 +876,8 @@ public:
     //! which is used to advertise which services we are offering
     //! that peer during `net_processing.cpp:PushNodeVersion()`.
     ServiceFlags GetLocalServices() const;
+    void AddLocalServices(ServiceFlags services);
+    void RemoveLocalServices(ServiceFlags services);
 
     uint64_t GetMaxOutboundTarget() const EXCLUSIVE_LOCKS_REQUIRED(!m_total_bytes_sent_mutex);
     std::chrono::seconds GetMaxOutboundTimeframe() const;
@@ -1091,7 +1096,8 @@ private:
      *
      * \sa Peer::our_services
      */
-    ServiceFlags nLocalServices;
+    mutable Mutex m_local_services_mutex;
+    ServiceFlags nLocalServices GUARDED_BY(m_local_services_mutex);
 
     std::unique_ptr<CSemaphore> semOutbound;
     std::unique_ptr<CSemaphore> semAddnode;

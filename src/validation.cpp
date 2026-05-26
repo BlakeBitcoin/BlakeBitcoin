@@ -4254,7 +4254,7 @@ VerifyDBResult CVerifyDB::VerifyDB(
     bool skipped_l3_checks{false};
     LogPrintf("Verification progress: 0%%\n");
 
-    const bool is_snapshot_cs{!chainstate.m_from_snapshot_blockhash};
+    const bool is_snapshot_cs{chainstate.m_from_snapshot_blockhash.has_value()};
 
     for (pindex = chainstate.m_chain.Tip(); pindex && pindex->pprev; pindex = pindex->pprev) {
         const int percentageDone = std::max(1, std::min(99, (int)(((double)(chainstate.m_chain.Height() - pindex->nHeight)) / (double)nCheckDepth * (nCheckLevel >= 4 ? 50 : 100))));
@@ -5590,6 +5590,9 @@ SnapshotCompletionResult ChainstateManager::MaybeCompleteSnapshotValidation(
 
     m_ibd_chainstate->m_disabled = true;
     this->MaybeRebalanceCaches();
+    if (m_options.snapshot_validation_complete_callback) {
+        m_options.snapshot_validation_complete_callback();
+    }
 
     return SnapshotCompletionResult::SUCCESS;
 }

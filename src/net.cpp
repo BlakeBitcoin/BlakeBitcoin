@@ -1050,7 +1050,7 @@ void CConnman::CreateNodeFromAcceptedSocket(std::unique_ptr<Sock>&& sock,
     NodeId id = GetNewNodeId();
     uint64_t nonce = GetDeterministicRandomizer(RANDOMIZER_ID_LOCALHOSTNONCE).Write(id).Finalize();
 
-    ServiceFlags nodeServices = nLocalServices;
+    ServiceFlags nodeServices = GetLocalServices();
     if (NetPermissions::HasFlag(permission_flags, NetPermissionFlags::BloomFilter)) {
         nodeServices = static_cast<ServiceFlags>(nodeServices | NODE_BLOOM);
     }
@@ -2046,7 +2046,7 @@ void CConnman::OpenNetworkConnection(const CAddress& addrConnect, bool fCountFai
     if (grantOutbound)
         grantOutbound->MoveTo(pnode->grantOutbound);
 
-    m_msgproc->InitializeNode(*pnode, nLocalServices);
+    m_msgproc->InitializeNode(*pnode, GetLocalServices());
     {
         LOCK(m_nodes_mutex);
         m_nodes.push_back(pnode);
@@ -2783,7 +2783,20 @@ uint64_t CConnman::GetTotalBytesSent() const
 
 ServiceFlags CConnman::GetLocalServices() const
 {
+    LOCK(m_local_services_mutex);
     return nLocalServices;
+}
+
+void CConnman::AddLocalServices(ServiceFlags services)
+{
+    LOCK(m_local_services_mutex);
+    nLocalServices = ServiceFlags(static_cast<uint64_t>(nLocalServices) | static_cast<uint64_t>(services));
+}
+
+void CConnman::RemoveLocalServices(ServiceFlags services)
+{
+    LOCK(m_local_services_mutex);
+    nLocalServices = ServiceFlags(static_cast<uint64_t>(nLocalServices) & ~static_cast<uint64_t>(services));
 }
 
 CNode::CNode(NodeId idIn,

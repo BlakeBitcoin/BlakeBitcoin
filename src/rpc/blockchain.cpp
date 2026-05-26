@@ -2701,6 +2701,142 @@ UniValue CreateUTXOSnapshot(
     return result;
 }
 
+static RPCHelpMan loadtxoutset()
+{
+    return RPCHelpMan{
+        "loadtxoutset",
+        "Load the serialized UTXO set from a file.\n"
+        "The snapshot is deserialized into a second chainstate, which is then used "
+        "to sync to the network tip while the original chainstate validates the "
+        "snapshot base in the background.",
+        {
+            {"path", RPCArg::Type::STR, RPCArg::Optional::NO, "Path to the snapshot file. If relative, will be prefixed by datadir."},
+        },
+        RPCResult{
+            RPCResult::Type::OBJ, "", "",
+                {
+                    {RPCResult::Type::NUM, "coins_loaded", "the number of coins loaded from the snapshot"},
+                    {RPCResult::Type::STR_HEX, "tip_hash", "the hash of the base of the snapshot"},
+                    {RPCResult::Type::NUM, "base_height", "the height of the base of the snapshot"},
+                    {RPCResult::Type::STR, "path", "the absolute path that the snapshot was loaded from"},
+                }
+        },
+        RPCExamples{
+            HelpExampleCli("-rpcclienttimeout=0 loadtxoutset", "utxo.dat")
+        },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+{
+    NodeContext& node = EnsureAnyNodeContext(request.context);
+    ChainstateManager& chainman = EnsureChainman(node);
+    const ArgsManager& args{EnsureAnyArgsman(request.context)};
+    const fs::path path = fsbridge::AbsPathJoin(args.GetDataDirNet(), fs::u8path(request.params[0].get_str()));
+
+    FILE* file{fsbridge::fopen(path, "rb")};
+    AutoFile afile{file};
+    if (afile.IsNull()) {
+        throw JSONRPCError(
+            RPC_INVALID_PARAMETER,
+            "Couldn't open file " + path.u8string() + " for reading.");
+    }
+
+    SnapshotMetadata metadata;
+    try {
+        afile >> metadata;
+    } catch (const std::ios_base::failure& e) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, strprintf("Unable to parse metadata: %s", e.what()));
+    }
+
+    if (!chainman.ActivateSnapshot(afile, metadata, false)) {
+        throw JSONRPCError(RPC_INTERNAL_ERROR, "Unable to load UTXO snapshot. (" + path.u8string() + ")");
+    }
+
+    if (node.connman) {
+        node.connman->RemoveLocalServices(NODE_NETWORK);
+        node.connman->AddLocalServices(NODE_NETWORK_LIMITED);
+    }
+
+    LOCK(::cs_main);
+    const CBlockIndex* snapshot_index{chainman.ActiveTip()};
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("coins_loaded", metadata.m_coins_count);
+    result.pushKV("tip_hash", snapshot_index ? snapshot_index->GetBlockHash().ToString() : metadata.m_base_blockhash.ToString());
+    result.pushKV("base_height", snapshot_index ? snapshot_index->nHeight : -1);
+    result.pushKV("path", path.u8string());
+    return result;
+},
+    };
+}
+
+static const std::vector<RPCResult> RPCHelpForChainstate{
+    {RPCResult::Type::NUM, "blocks", "number of blocks in this chainstate"},
+    {RPCResult::Type::STR_HEX, "bestblockhash", "blockhash of the tip"},
+    {RPCResult::Type::STR_HEX, "bits", "nBits: compact representation of the block difficulty target"},
+    {RPCResult::Type::NUM, "difficulty", "difficulty of the tip"},
+    {RPCResult::Type::NUM, "verificationprogress", "progress toward the network tip"},
+    {RPCResult::Type::STR_HEX, "snapshot_blockhash", /*optional=*/true, "the base block of the snapshot this chainstate is based on, if any"},
+    {RPCResult::Type::NUM, "coins_db_cache_bytes", "size of the coinsdb cache"},
+    {RPCResult::Type::NUM, "coins_tip_cache_bytes", "size of the coinstip cache"},
+    {RPCResult::Type::BOOL, "active", "whether this is the active chainstate"},
+    {RPCResult::Type::BOOL, "validated", "whether the chainstate is fully validated"},
+};
+
+static RPCHelpMan getchainstates()
+{
+    return RPCHelpMan{
+        "getchainstates",
+        "Return information about chainstates.\n",
+        {},
+        RPCResult{
+            RPCResult::Type::OBJ, "", "", {
+                {RPCResult::Type::NUM, "headers", "the number of headers seen so far"},
+                {RPCResult::Type::ARR, "chainstates", "list of chainstates ordered by work, with the most-work active chainstate last", {{RPCResult::Type::OBJ, "", "", RPCHelpForChainstate}}},
+            }
+        },
+        RPCExamples{
+            HelpExampleCli("getchainstates", "")
+            + HelpExampleRpc("getchainstates", "")
+        },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+{
+    LOCK(::cs_main);
+
+    ChainstateManager& chainman = EnsureAnyChainman(request.context);
+    const CBlockIndex* active_tip{chainman.ActiveTip()};
+    const bool snapshot_validated{chainman.IsSnapshotValidated()};
+
+    UniValue obj(UniValue::VOBJ);
+    obj.pushKV("headers", chainman.m_best_header ? chainman.m_best_header->nHeight : -1);
+
+    UniValue chainstates(UniValue::VARR);
+    for (const Chainstate* chainstate : chainman.GetAll()) {
+        UniValue data(UniValue::VOBJ);
+        const CBlockIndex* tip{chainstate->m_chain.Tip()};
+        if (!tip) {
+            continue;
+        }
+
+        data.pushKV("blocks", chainstate->m_chain.Height());
+        data.pushKV("bestblockhash", tip->GetBlockHash().GetHex());
+        data.pushKV("bits", strprintf("%08x", tip->nBits));
+        data.pushKV("difficulty", GetDifficulty(tip));
+        data.pushKV("verificationprogress", GuessVerificationProgress(chainman.GetParams().TxData(), tip));
+        if (chainstate->m_from_snapshot_blockhash) {
+            data.pushKV("snapshot_blockhash", chainstate->m_from_snapshot_blockhash->ToString());
+        }
+        data.pushKV("coins_db_cache_bytes", uint64_t{chainstate->m_coinsdb_cache_size_bytes});
+        data.pushKV("coins_tip_cache_bytes", uint64_t{chainstate->m_coinstip_cache_size_bytes});
+        data.pushKV("active", tip == active_tip);
+        data.pushKV("validated", !chainstate->m_from_snapshot_blockhash || snapshot_validated);
+        chainstates.push_back(data);
+    }
+
+    obj.pushKV("chainstates", chainstates);
+    return obj;
+},
+    };
+}
+
 void RegisterBlockchainRPCCommands(CRPCTable& t)
 {
     static const CRPCCommand commands[]{
@@ -2724,6 +2860,8 @@ void RegisterBlockchainRPCCommands(CRPCTable& t)
         {"blockchain", &scantxoutset},
         {"blockchain", &scanblocks},
         {"blockchain", &getblockfilter},
+        {"blockchain", &loadtxoutset},
+        {"blockchain", &getchainstates},
         {"hidden", &invalidateblock},
         {"hidden", &reconsiderblock},
         {"hidden", &waitfornewblock},
