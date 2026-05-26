@@ -1448,6 +1448,13 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         .chainparams = chainparams,
         .datadir = args.GetDataDirNet(),
         .adjusted_time_callback = GetAdjustedTime,
+        .snapshot_validation_complete_callback = [&node] {
+            if (node.connman && node.chainman && !node.chainman->m_blockman.IsPruneMode()) {
+                node.connman->RemoveLocalServices(NODE_NETWORK_LIMITED);
+                node.connman->AddLocalServices(NODE_NETWORK);
+                LogPrintf("[snapshot] restored full NODE_NETWORK local service after background validation completed\n");
+            }
+        },
     };
     Assert(!ApplyArgsManOptions(args, chainman_opts)); // no error can happen, already checked in AppInitParameterInteraction
 
@@ -1616,8 +1623,14 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
             }
         }
     } else {
-        LogPrintf("Setting NODE_NETWORK on non-prune mode\n");
-        nLocalServices = ServiceFlags(nLocalServices | NODE_NETWORK);
+        const bool snapshot_pending_validation{WITH_LOCK(cs_main, return chainman.ActiveChainstate().m_from_snapshot_blockhash.has_value() &&
+            !chainman.IsSnapshotValidated())};
+        if (snapshot_pending_validation) {
+            LogPrintf("Running node in NODE_NETWORK_LIMITED mode until snapshot background validation completes\n");
+        } else {
+            LogPrintf("Setting NODE_NETWORK on non-prune mode\n");
+            nLocalServices = ServiceFlags(nLocalServices | NODE_NETWORK);
+        }
     }
 
     // ********************************************************* Step 11: import blocks

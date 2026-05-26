@@ -177,8 +177,8 @@ public:
         pchMessageStart[3] = 0xb7;
         nDefaultPort = 8356;
         nPruneAfterHeight = 100000;
-        m_assumed_blockchain_size = 0;
-        m_assumed_chain_state_size = 0;
+        m_assumed_blockchain_size = 6;
+        m_assumed_chain_state_size = 1;
 
         // BlakeBitcoin mainnet genesis from coin-source-of-truth.md and BBTC-0.15.21
         // src/chainparams.cpp:132-134. nTime = 1399109785 (12 May 2014), nNonce
@@ -230,7 +230,13 @@ public:
         };
 
         m_assumeutxo_data = MapAssumeutxo{
-            // TODO to be specified in a future patch (post-mainnet-release).
+            // Intentionally empty for BlakeBitcoin mainnet.
+            //
+            // Snapshot RPC infrastructure may be present, but do not hardcode or
+            // publish mainnet assumeutxo metadata until BlakeBitcoin's SegWit
+            // activation state and snapshot policy are finalized. With no entry
+            // here, mainnet loadtxoutset rejects snapshots instead of accepting
+            // unapproved checkpoint metadata.
         };
 
         // ChainTxData is used by GuessVerificationProgress for operator-facing

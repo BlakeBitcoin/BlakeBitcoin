@@ -174,8 +174,8 @@ QT_RES_FONTS = \
 QT_RES_ICONS = \
   qt/res/icons/add.png \
   qt/res/icons/address-book.png \
-  qt/res/icons/blakebitcoin.ico \
-  qt/res/icons/blakebitcoin_testnet.ico \
+  qt/res/icons/blakebitcoin_32.ico \
+  qt/res/icons/blakebitcoin_32_testnet.ico \
   qt/res/icons/blakebitcoin.png \
   qt/res/icons/chevron.png \
   qt/res/icons/clock1.png \
