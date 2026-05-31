@@ -275,13 +275,13 @@ public:
         // waiting on the 0.15.21 mainnet activation. Do NOT change.
         consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = 0;
-        // BBTC testnet shares mainnet's legacy consensus (powLimit + 14-day
-        // retarget at 2.5-min spacing + 75%/8064 BIP9 window).
-        consensus.powLimit = uint256S("0x000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        // Private 25.2 feature-testnet uses regtest-style PoW so local CPU
+        // pool tests can advance blocks quickly while mainnet stays unchanged.
+        consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 150;
         consensus.fPowAllowMinDifficultyBlocks = true;
-        consensus.fPowNoRetargeting = false;
+        consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 6048;
         consensus.nMinerConfirmationWindow = 8064;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
