@@ -112,7 +112,9 @@ public:
         // 0.25.2 inherits the 0.15.21 BIP9 activation result as a buried height
         // and does not create a second SegWit signaling window.
         consensus.SegwitHeight = 2564352;
-        consensus.MinBIP9WarningHeight = 0;
+        // Historical miners set SegWit/versionbits before burial. Only warn
+        // on post-burial unknown versionbits.
+        consensus.MinBIP9WarningHeight = 2564352;
         // BBTC-0.15.21 powLimit (from src/chainparams.cpp:87) is the wider mask
         // ~uint256(0)>>24 = 0x000000FF...FF (3 bytes zero, 29 bytes ff). NOT the
         // narrower 0x000000FFFF000... used elsewhere in the family. This is the
