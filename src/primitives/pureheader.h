@@ -27,6 +27,10 @@ public:
     static constexpr int32_t VERSION_AUXPOW = (1 << 8);
     static constexpr int32_t VERSION_CHAIN_START = (1 << 16);
     static constexpr int32_t VERSION_CHAIN_MASK = (0xFF << 16);
+    // AuxPoW metadata is part of the block version word and is unavailable
+    // for BIP9 signaling.
+    static constexpr int32_t VERSION_AUXPOW_RESERVED_MASK =
+        BLOCK_VERSION_DEFAULT | VERSION_AUXPOW | VERSION_CHAIN_MASK;
 
     int32_t nVersion;
     uint256 hashPrevBlock;
