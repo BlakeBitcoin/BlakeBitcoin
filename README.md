@@ -13,26 +13,26 @@ builds.
 
 ## Mainnet Consensus Changes In 0.25.2
 
-**Mainnet SegWit status: BlakeBitcoin 0.15.21 has not yet reached mainnet SegWit ACTIVE.**
+**Mainnet SegWit status: BlakeBitcoin 0.25.2 inherits the recorded 0.15.21 SegWit ACTIVE height `2564352`.**
 
-This 0.25.2 line therefore leaves SegWit unburied at the placeholder height
-and does not create a second signaling window. The other cleanup BIPs and
-Taproot are assigned to the later aux-coin rollout window, with BBTC-specific
-heights derived from its 150-second block spacing.
+This 0.25.2 line buries SegWit at height `2564352` and does not create a
+second signaling window. The other cleanup BIPs and Taproot are assigned to
+the later aux-coin rollout window, with BBTC-specific heights derived from its
+150-second block spacing.
 
 Pools and miners should use the daemon-provided AuxPoW block-template version.
 Do not manually rewrite version bits.
 
 | Rule set | Mainnet policy in BlakeBitcoin 0.25.2 |
 |---|---|
-| SegWit (`BIP141` / `BIP143` / `BIP147`) | Pending; keep `SegwitHeight = 100000000` until the actual 0.15.21 ACTIVE height is known. |
+| SegWit (`BIP141` / `BIP143` / `BIP147`) | Buried at `SegwitHeight = 2564352`; inherited from the 0.15.21 BIP9 activation result and not re-signaled in 0.25.2. |
 | `BIP34` coinbase height | Height activation at `2572228`; `BIP34Hash = uint256{}`. |
 | `BIP65` / CLTV | Height activation at `2572228`; required for standard CLTV atomic-swap refunds. |
 | `BIP66` / strict DER | Height activation at `2572228`. |
 | Taproot (`BIP340` / `BIP341` / `BIP342`) | BIP9 deployment bit `2`, start `1782871200` (`2026-07-01 02:00:00 UTC`), timeout `1814407200` (`2027-07-01 02:00:00 UTC`), minimum activation height `2576260`. |
 
 Only Taproot is a future BIP9-signaled deployment in 0.25.2. `BIP34`,
-`BIP65`, `BIP66`, and the pending SegWit burial are height rules.
+`BIP65`, `BIP66`, and buried SegWit are height rules.
 BlakeBitcoin Core computes the correct BIP9 top bits, Taproot bit `2`, AuxPoW
 flag, and BlakeBitcoin chain-ID bits in block templates.
 
@@ -73,9 +73,9 @@ family. It is a peer-to-peer digital currency with no central authority.
 
 ## Network Activation Notes
 
-BBTC SegWit remains pending on the 0.15.21 mainnet line. Do not replace
-`SegwitHeight = 100000000` in 0.25.2 until the released 0.15.21 deployment
-reaches ACTIVE and the actual activation height is recorded.
+BBTC SegWit is treated as inherited mainnet history in 0.25.2. The buried
+height is `SegwitHeight = 2564352`, matching the 0.15.21 BIP9 ACTIVE-height
+rollout math.
 
 Testnet is treated as a 0.25.2 feature-test/reset network. SegWit, BIP34,
 BIP65/CLTV, BIP66, and Taproot are active from height `1` on testnet so

@@ -98,8 +98,8 @@ public:
         // and Photon (perpetual difficulty-aware reward). See
         // coin-source-of-truth.md "BlakeBitcoin (BBTC)" Subsidy line.
         consensus.nSubsidyHalvingInterval = 210000;
-        // BBTC 0.25.2 keeps SegWit pending until the 0.15.21 line reaches ACTIVE,
-        // but schedules the post-rebase cleanup BIPs in the later family window.
+        // BBTC 0.25.2 buries the recorded 0.15.21 SegWit ACTIVE height and
+        // schedules the post-rebase cleanup BIPs in the later family window.
         consensus.BIP34Height = 2572228;
         consensus.BIP34Hash = uint256{};
         consensus.BIP65Height = 2572228;
@@ -108,16 +108,10 @@ public:
         // primitive. ALWAYS_ACTIVE from genesis on Blakestream family per
         // coin-source-of-truth.md "Common rules". Do NOT change.
         consensus.CSVHeight = 1;
-        // TODO(blakestream-25.2-activation): SegWit (BIP141/143/147) — atomic-swap
-        // anchor (P2WSH HTLC). Activates on BBTC-0.15.21 mainnet via BIP9 (start
-        // May 11 2026, one week behind the parent). When 0.15.21 SegWit reaches
-        // LOCKED_IN -> ACTIVE on mainnet, capture the activation height with
-        // `blakebitcoin-cli getblockchaininfo` (read "softforks.segwit.height" or
-        // scan the block index where IsBIP9Active(SEGWIT) flipped) and replace the
-        // placeholder 100000000 here with that height. Once captured and shipped
-        // on 0.25.2, this is a BURIED activation height: 0.25.2 inherits already-
-        // active SegWit at this height, never re-signals.
-        consensus.SegwitHeight = 100000000;
+        // SegWit (BIP141/143/147) — atomic-swap anchor (P2WSH HTLC). BBTC
+        // 0.25.2 inherits the 0.15.21 BIP9 activation result as a buried height
+        // and does not create a second SegWit signaling window.
+        consensus.SegwitHeight = 2564352;
         consensus.MinBIP9WarningHeight = 0;
         // BBTC-0.15.21 powLimit (from src/chainparams.cpp:87) is the wider mask
         // ~uint256(0)>>24 = 0x000000FF...FF (3 bytes zero, 29 bytes ff). NOT the
