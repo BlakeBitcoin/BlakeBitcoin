@@ -1997,7 +1997,7 @@ private:
         if (params.nAuxpowChainId == 0) return false;
 
         const int32_t mask{int32_t{1} << bit};
-        return (mask & (CPureBlockHeader::VERSION_AUXPOW | CPureBlockHeader::VERSION_CHAIN_MASK)) != 0;
+        return (mask & CPureBlockHeader::VERSION_AUXPOW_RESERVED_MASK) != 0;
     }
 
 public:
