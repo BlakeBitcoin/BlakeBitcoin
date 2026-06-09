@@ -225,14 +225,16 @@ public:
             }
         };
 
+        // BlakeBitcoin mainnet AssumeUTXO snapshot generated from a fully synced,
+        // non-pruned 25.2 node after SegWit activation.
         m_assumeutxo_data = MapAssumeutxo{
-            // Intentionally empty for BlakeBitcoin mainnet.
-            //
-            // Snapshot RPC infrastructure may be present, but do not hardcode or
-            // publish mainnet assumeutxo metadata until BlakeBitcoin's SegWit
-            // activation state and snapshot policy are finalized. With no entry
-            // here, mainnet loadtxoutset rejects snapshots instead of accepting
-            // unapproved checkpoint metadata.
+            {
+                2565494,
+                {
+                    AssumeutxoHash{uint256S("0x5440c2403752e80603a1895cfc340df5436e99513bb9a6b3e2c69dd4b1e3ab9a")},
+                    2986391,
+                },
+            },
         };
 
         // ChainTxData is used by GuessVerificationProgress for operator-facing
