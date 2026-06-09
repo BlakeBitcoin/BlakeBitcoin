@@ -71,28 +71,6 @@ family. It is a peer-to-peer digital currency with no central authority.
 | Testnet Bech32 HRP | `tbbtc` |
 | Regtest Bech32 HRP | `rbbtc` |
 
-## Network Activation Notes
-
-BBTC SegWit is treated as inherited mainnet history in 0.25.2. The buried
-height is `SegwitHeight = 2564352`, matching the 0.15.21 BIP9 ACTIVE-height
-rollout math.
-
-Mainnet AssumeUTXO metadata is available for the snapshot at height `2565494`.
-The snapshot base block is
-`57f2d1b39ea9e0961f50c6a20420bb478582849e50a3cdb6cbf84f98183ff482`,
-with txoutset hash
-`5440c2403752e80603a1895cfc340df5436e99513bb9a6b3e2c69dd4b1e3ab9a`
-and `nChainTx = 2986391`.
-
-Testnet is treated as a 0.25.2 feature-test/reset network. SegWit, BIP34,
-BIP65/CLTV, BIP66, and Taproot are active from height `1` on testnet so
-wallet, merged-mining, atomic-swap, Lightning, and Taproot behavior can be
-tested without waiting on mainnet-style activation windows.
-
-Regtest keeps override support through `-testactivationheight=` and
-`-vbparams=` for activation-cycle tests. AuxPoW is available from genesis on
-regtest.
-
 ## Quick Start
 
 ```bash
