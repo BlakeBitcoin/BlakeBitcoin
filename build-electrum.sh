@@ -32,10 +32,12 @@ any amd64 Docker host — Linux, Windows, or an Intel Mac — can build either):
                      (amd64 Docker host -> linux + windows;  macOS -> + macos)
 
 Environment:
-  ELECTRUM_SOURCE         Existing BlueDragon747/Blakestream-Electrum checkout to use.
-  ELECTRUM_REPO_URL       Git URL cloned if no local checkout is found.
-  ELECTRUM_WORKSPACE_ROOT Generated variant workspaces.
-  ELECTRUM_ARTIFACT_ROOT  Output artifact root.
+  ELECTRUM_SOURCE          Existing BlueDragon747/Blakestream-Electrum checkout to use.
+  ELECTRUM_REPO_URL        Git URL cloned if no local checkout is found.
+  ELECTRUM_WORKSPACE_ROOT  Generated variant workspaces.
+  ELECTRUM_ARTIFACT_ROOT   Output artifact root.
+
+  ELECTRIUM_* aliases are also accepted for older local scripts.
 EOF
 }
 
@@ -59,23 +61,36 @@ amd64_native()  { case "$(uname -m)" in x86_64|amd64) return 0 ;; *) return 1 ;;
 container_host() { have_docker && amd64_native; }
 
 find_electrum_source() {
-    if [ -n "${ELECTRUM_SOURCE:-}" ]; then printf '%s\n' "$ELECTRUM_SOURCE"; return; fi
+    local configured_source="${ELECTRUM_SOURCE:-${ELECTRIUM_SOURCE:-}}"
+    if [ -n "$configured_source" ]; then printf '%s\n' "$configured_source"; return; fi
     local candidate
     for candidate in \
         "$REPO_ROOT"/../Blakestream-Electrum \
         "$REPO_ROOT"/../Blakestream-Electrum-0.25.2 \
-        /mnt/ram-build/Blakestream-Electrum-0.25.2 \
-        /home/sid/Blakestream-Electrum-0.25.2 \
-        /home/sid/Blakestream-Electrum ; do
+        "$REPO_ROOT"/../Blakestream-Electrium \
+        "$REPO_ROOT"/../Blakestream-Electrium-0.25.2 ; do
         if [ -x "$candidate/scripts/build_wallet_variant.sh" ]; then printf '%s\n' "$candidate"; return; fi
     done
     local cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/blakestream"
     local source_root="$cache_root/Blakestream-Electrum"
-    local repo_url="${ELECTRUM_REPO_URL:-https://github.com/BlueDragon747/Blakestream-Electrum.git}"
+    local repo_url="${ELECTRUM_REPO_URL:-${ELECTRIUM_REPO_URL:-https://github.com/BlueDragon747/Blakestream-Electrum.git}}"
     if [ ! -x "$source_root/scripts/build_wallet_variant.sh" ]; then
         mkdir -p "$cache_root"
-        git clone --depth 1 "$repo_url" "$source_root"
+        if [ -d "$source_root/.git" ]; then
+            ( cd "$source_root" \
+                && git remote set-url origin "$repo_url" \
+                && git fetch --depth 1 origin HEAD \
+                && git reset --hard FETCH_HEAD )
+        else
+            rm -rf "$source_root"
+            git clone --depth 1 "$repo_url" "$source_root"
+        fi
     fi
+    [ -x "$source_root/scripts/build_wallet_variant.sh" ] || {
+        echo "ERROR: $repo_url did not provide scripts/build_wallet_variant.sh" >&2
+        echo "Set ELECTRUM_SOURCE to an existing builder checkout or ELECTRUM_REPO_URL to the correct builder repo." >&2
+        return 1
+    }
     printf '%s\n' "$source_root"
 }
 
@@ -83,16 +98,15 @@ ELECTRUM_ROOT="$(find_electrum_source)"
 [ -x "$ELECTRUM_ROOT/scripts/build_wallet_variant.sh" ] || {
     echo "ERROR: missing Electrum builder at $ELECTRUM_ROOT/scripts/build_wallet_variant.sh" >&2; exit 1; }
 
-WORKSPACE_ROOT="${ELECTRUM_WORKSPACE_ROOT:-$REPO_ROOT/outputs/Electrum/workspaces}"
-ARTIFACT_ROOT="${ELECTRUM_ARTIFACT_ROOT:-$REPO_ROOT/outputs/Electrum}"
+WORKSPACE_ROOT="${ELECTRUM_WORKSPACE_ROOT:-${ELECTRIUM_WORKSPACE_ROOT:-$REPO_ROOT/outputs/Electrum/workspaces}}"
+ARTIFACT_ROOT="${ELECTRUM_ARTIFACT_ROOT:-${ELECTRIUM_ARTIFACT_ROOT:-$REPO_ROOT/outputs/Electrum}}"
 
 # Build one target after checking this host can do it.
 run_one() {
     local t="$1"
     case "$t" in
         macos|mac)
-            is_mac || { echo "macos must be built ON macOS (no cross-compile). From a Docker host, SSH-dispatch:" >&2
-                        echo "  $ELECTRUM_ROOT/scripts/build-single-wallets.sh macos $COIN_CODE" >&2; return 2; } ;;
+            is_mac || { echo "macos must be built ON macOS (no cross-compile); run this on a Mac." >&2; return 2; } ;;
         linux|appimage|windows|win)
             have_docker || { echo "$t needs Docker on this host." >&2; return 2; }
             amd64_native || echo "  warning: $t builds an amd64 container; on this $(uname -m) host it runs under slow/flaky emulation." >&2 ;;
